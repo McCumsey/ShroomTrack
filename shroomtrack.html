@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ShroomTrack — Cultivation Log</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --green: #2d6a4f;
+    --green-light: #52b788;
+    --green-pale: #d8f3dc;
+    --green-dark: #1b4332;
+    --amber: #e76f51;
+    --amber-light: #f4a261;
+    --cream: #fefae0;
+    --bark: #4a3728;
+    --bark-light: #7c5c45;
+    --fog: #f8f9fa;
+    --border: #dee2e6;
+    --text: #212529;
+    --text-muted: #6c757d;
+    --red: #c0392b;
+    --red-light: #fadbd8;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── TOP NAV ── */
+  .nav {
+    background: var(--green-dark);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo {
+    color: var(--green-pale);
+    font-size: 1.1rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+  }
+  .nav-logo span { color: var(--green-light); }
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .nav-tab {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .nav-tab.active, .nav-tab:hover {
+    background: var(--green-light);
+    color: var(--green-dark);
+    border-color: var(--green-light);
+    font-weight: bold;
+  }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 1rem; }
+  .view.active { display: block; }
+
+  /* ── STAGE SELECTOR (home) ── */
+  .home-header {
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+  }
+  .home-header h1 {
+    font-size: 1.4rem;
+    color: var(--green-dark);
+    margin-bottom: 0.25rem;
+  }
+  .home-header p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .stage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 1rem;
+  }
+  .stage-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: var(--shadow);
+  }
+  .stage-card:hover, .stage-card:active {
+    border-color: var(--green-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(45,106,79,0.15);
+  }
+  .stage-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .stage-name {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--green-dark);
+    display: block;
+  }
+  .stage-sub {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .stage-count {
+    display: inline-block;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 20px;
+    margin-top: 4px;
+    font-weight: bold;
+  }
+
+  /* ── FORMS ── */
+  .form-header {
+    background: var(--green-dark);
+    color: white;
+    padding: 1rem;
+    border-radius: 12px 12px 0 0;
+    margin: -1rem -1rem 1rem;
+  }
+  .form-header h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.15rem;
+  }
+  .form-header p {
+    font-size: 0.75rem;
+    opacity: 0.75;
+  }
+  .form-id-badge {
+    display: inline-block;
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .field-group {
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: bold;
+    color: var(--bark);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  input[type=text], input[type=date], input[type=number],
+  select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: white;
+    color: var(--text);
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--green-light);
+    box-shadow: 0 0 0 3px rgba(82,183,136,0.15);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .field-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .contamination-toggle {
+    display: flex;
+    gap: 10px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .toggle-btn.selected-no {
+    background: var(--green-pale);
+    border-color: var(--green-light);
+    color: var(--green-dark);
+    font-weight: bold;
+  }
+  .toggle-btn.selected-yes {
+    background: var(--red-light);
+    border-color: var(--red);
+    color: var(--red);
+    font-weight: bold;
+  }
+
+  .contam-details {
+    background: var(--red-light);
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    display: none;
+  }
+  .contam-details.visible { display: block; }
+
+  .flush-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .flush-table th {
+    text-align: center;
+    padding: 6px 4px;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .flush-table td {
+    padding: 4px;
+  }
+  .flush-table input {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .flush-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    letter-spacing: 0.02em;
+    transition: background 0.15s;
+  }
+  .submit-btn:hover { background: var(--green-dark); }
+  .submit-btn:active { transform: scale(0.99); }
+
+  .back-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-screen {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  .success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  .success-screen h2 {
+    color: var(--green-dark);
+    margin-bottom: 0.5rem;
+  }
+  .success-screen p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .success-id {
+    font-family: 'Courier New', monospace;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 1rem 0;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  /* ── QR GENERATOR ── */
+  .qr-section { margin-bottom: 1.5rem; }
+  .qr-stage-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .qr-stage-btn {
+    padding: 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font-family: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-align: center;
+  }
+  .qr-stage-btn.active {
+    border-color: var(--green-light);
+    background: var(--green-pale);
+    color: var(--green-dark);
+    font-weight: bold;
+  }
+
+  .qr-id-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .qr-id-input-row input {
+    flex: 1;
+  }
+  .gen-btn {
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .qr-output {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .qr-output canvas, .qr-output img {
+    max-width: 180px !important;
+    height: auto !important;
+  }
+  #qr-canvas-wrap { display: inline-block; }
+  .qr-label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--green-dark);
+    font-family: 'Courier New', monospace;
+    margin-top: 0.75rem;
+  }
+  .qr-url {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    word-break: break-all;
+  }
+  .download-btn {
+    display: inline-block;
+    margin-top: 0.75rem;
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border: 1px solid var(--green-light);
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .bulk-gen {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  .bulk-gen h3 {
+    font-size: 0.85rem;
+    color: var(--bark);
+    margin-bottom: 0.75rem;
+  }
+  .bulk-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .bulk-row label {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.8rem;
+    min-width: 50px;
+    margin: 0;
+  }
+  .bulk-row input {
+    width: 70px;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .print-sheet-btn {
+    width: 100%;
+    background: var(--bark);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+
+  /* ── RECORDS VIEW ── */
+  .records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .records-header h2 { font-size: 1rem; color: var(--green-dark); }
+  .stage-filter {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .filter-chip {
+    white-space: nowrap;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .filter-chip.active {
+    background: var(--green-dark);
+    color: white;
+    border-color: var(--green-dark);
+  }
+  .record-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.65rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .record-card:hover { box-shadow: var(--shadow); }
+  .record-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .record-id {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--green-dark);
+  }
+  .record-stage-badge {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+  .record-species {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .record-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .contam-flag {
+    display: inline-block;
+    background: var(--red-light);
+    color: var(--red);
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    font-weight: bold;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  .export-btn {
+    background: var(--green-pale);
+    color: var(--green-dark);
+    border: 1px solid var(--green-light);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  /* ── RECORD DETAIL ── */
+  .detail-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .detail-field:last-child { border-bottom: none; }
+  .detail-label { color: var(--text-muted); font-size: 0.78rem; }
+  .detail-value { font-weight: bold; text-align: right; max-width: 60%; }
+
+  /* Stage badge colors */
+  .badge-agar { background: #e8f5e9; color: #2e7d32; }
+  .badge-lc   { background: #e3f2fd; color: #1565c0; }
+  .badge-grain { background: #fff8e1; color: #f57f17; }
+  .badge-substrate { background: #fce4ec; color: #880e4f; }
+  .badge-drying { background: #f3e5f5; color: #6a1b9a; }
+  .badge-extraction { background: #e0f2f1; color: #004d40; }
+
+  @media print {
+    .nav, .back-btn, .nav-tabs { display: none !important; }
+    .qr-print-grid {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+  }
+
+  .section-divider {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.5rem 0 0.25rem;
+    border-top: 1px solid var(--border);
+    margin-top: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Shroom<span>Track</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('home')">Log</button>
+    <button class="nav-tab" onclick="showView('qr')">QR Codes</button>
+    <button class="nav-tab" onclick="showView('records')">Records</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ HOME / LOG ══════════════════════════ -->
+<div id="view-home" class="view active">
+  <div class="home-header">
+    <h1>Select Stage to Log</h1>
+    <p>Tap a stage or scan a QR code</p>
+  </div>
+  <div class="stage-grid">
+    <div class="stage-card" onclick="openForm('agar')">
+      <span class="stage-icon">🧫</span>
+      <span class="stage-name">Agar / Petri</span>
+      <span class="stage-sub">Plate preparation</span>
+      <span class="stage-count" id="cnt-agar">0 records</span>
+    </div>
+    <div class="stage-card" onclick="openForm('lc')">
+      <span class="stage-icon">🧪</span>
+      <span class="stage-name">Liquid Culture</span>
+      <span class="stage-sub">LC preparation</span>
+      <span class="stage-count" id="cnt-lc">0 records</span>
+    </div>
+    <div class="stage-card" onclick="openForm('grain')">
+      <span class="stage-icon">🌾</span>
+      <span class="stage-name">Grain Spawn</span>
+      <span class="stage-sub">Inoculation</span>
+      <span class="stage-count" id="cnt-grain">0 records</span>
+    </div>
+    <div class="stage-card" onclick="openForm('substrate')">
+      <span class="stage-icon">🍄</span>
+      <span class="stage-name">Substrate & Fruiting</span>
+      <span class="stage-sub">Fruiting & harvest</span>
+      <span class="stage-count" id="cnt-substrate">0 records</span>
+    </div>
+    <div class="stage-card" onclick="openForm('drying')">
+      <span class="stage-icon">☀️</span>
+      <span class="stage-name">Drying & Storage</span>
+      <span class="stage-sub">Post-harvest</span>
+      <span class="stage-count" id="cnt-drying">0 records</span>
+    </div>
+    <div class="stage-card" onclick="openForm('extraction')">
+      <span class="stage-icon">⚗️</span>
+      <span class="stage-name">Extraction</span>
+      <span class="stage-sub">Water & alcohol</span>
+      <span class="stage-count" id="cnt-extraction">0 records</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ FORM VIEW ══════════════════════════ -->
+<div id="view-form" class="view">
+  <button class="back-btn" onclick="showView('home')">← Back</button>
+  <div id="form-container"></div>
+</div>
+
+<!-- ═══════════════════════════════ SUCCESS ════════════════════════════ -->
+<div id="view-success" class="view">
+  <div class="success-screen">
+    <div class="success-icon">✅</div>
+    <h2>Record Saved</h2>
+    <div class="success-id" id="success-id-display"></div>
+    <p>Entry logged to ShroomTrack</p>
+    <br>
+    <button class="submit-btn" style="max-width:260px;" onclick="showView('home')">Log Another</button>
+    <br><br>
+    <button class="back-btn" onclick="showView('records')">View Records →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ QR VIEW ════════════════════════════ -->
+<div id="view-qr" class="view">
+  <h2 style="font-size:1rem;color:var(--green-dark);margin-bottom:1rem;">Generate QR Codes</h2>
+
+  <div class="qr-stage-selector" id="qr-stage-buttons">
+    <button class="qr-stage-btn active" data-stage="agar" onclick="selectQrStage(this)">🧫 Agar</button>
+    <button class="qr-stage-btn" data-stage="lc" onclick="selectQrStage(this)">🧪 Liquid Culture</button>
+    <button class="qr-stage-btn" data-stage="grain" onclick="selectQrStage(this)">🌾 Grain Spawn</button>
+    <button class="qr-stage-btn" data-stage="substrate" onclick="selectQrStage(this)">🍄 Substrate</button>
+    <button class="qr-stage-btn" data-stage="drying" onclick="selectQrStage(this)">☀️ Drying</button>
+    <button class="qr-stage-btn" data-stage="extraction" onclick="selectQrStage(this)">⚗️ Extraction</button>
+  </div>
+
+  <div class="qr-id-input-row">
+    <input type="text" id="qr-id-input" placeholder="e.g. AGAR-0001" value="AGAR-0001">
+    <button class="gen-btn" onclick="generateQR()">Generate</button>
+  </div>
+
+  <div class="qr-output" id="qr-output">
+    <div id="qr-canvas-wrap"></div>
+    <div class="qr-label" id="qr-label-text"></div>
+    <div class="qr-url" id="qr-url-text"></div>
+    <button class="download-btn" onclick="downloadQR()">Download PNG</button>
+  </div>
+
+  <div class="bulk-gen">
+    <h3>Bulk Print Sheet</h3>
+    <div class="bulk-row">
+      <label>Stage</label>
+      <span id="bulk-stage-display" style="font-size:0.8rem;color:var(--green-dark);font-weight:bold;">Agar</span>
+    </div>
+    <div class="bulk-row">
+      <label>Start #</label>
+      <input type="number" id="bulk-start" value="1" min="1">
+      <label style="margin-left:8px;">End #</label>
+      <input type="number" id="bulk-end" value="10" min="1">
+    </div>
+    <button class="print-sheet-btn" onclick="printBulk()">🖨 Print QR Label Sheet</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ RECORDS VIEW ═══════════════════════ -->
+<div id="view-records" class="view">
+  <div class="records-header">
+    <h2>All Records</h2>
+    <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div class="stage-filter" id="stage-filter">
+    <button class="filter-chip active" data-filter="all" onclick="filterRecords(this)">All</button>
+    <button class="filter-chip" data-filter="agar" onclick="filterRecords(this)">Agar</button>
+    <button class="filter-chip" data-filter="lc" onclick="filterRecords(this)">LC</button>
+    <button class="filter-chip" data-filter="grain" onclick="filterRecords(this)">Grain</button>
+    <button class="filter-chip" data-filter="substrate" onclick="filterRecords(this)">Substrate</button>
+    <button class="filter-chip" data-filter="drying" onclick="filterRecords(this)">Drying</button>
+    <button class="filter-chip" data-filter="extraction" onclick="filterRecords(this)">Extraction</button>
+  </div>
+  <div id="records-list"></div>
+</div>
+
+<!-- ═══════════════════════════════ RECORD DETAIL ══════════════════════ -->
+<div id="view-detail" class="view">
+  <button class="back-btn" onclick="showView('records')">← Back to Records</button>
+  <div id="detail-container"></div>
+</div>
+
+<!-- ═══════════════════════════════ PRINT LAYOUT ══════════════════════ -->
+<div id="print-layout" style="display:none;"></div>
+
+<script>
+const APP_URL = window.location.href.split('?')[0];
+let currentStage = 'agar';
+let currentQrStage = 'agar';
+
+const STAGE_CONFIG = {
+  agar:       { label: 'Agar / Petri',      prefix: 'AGAR',  icon: '🧫', badgeClass: 'badge-agar' },
+  lc:         { label: 'Liquid Culture',     prefix: 'LC',    icon: '🧪', badgeClass: 'badge-lc' },
+  grain:      { label: 'Grain Spawn',        prefix: 'GRAIN', icon: '🌾', badgeClass: 'badge-grain' },
+  substrate:  { label: 'Substrate & Fruiting', prefix: 'SUB', icon: '🍄', badgeClass: 'badge-substrate' },
+  drying:     { label: 'Drying & Storage',   prefix: 'DRY',   icon: '☀️', badgeClass: 'badge-drying' },
+  extraction: { label: 'Extraction',         prefix: 'EXT',   icon: '⚗️', badgeClass: 'badge-extraction' },
+};
+
+const SPECIES_LIST = [
+  "Lion's Mane - Hericium Erinaceus",
+  "Turkey Tail - Trametes Versicolor",
+  "Reishi - Ganoderma Lucidum",
+  "Chaga - Inonotus Obliquus",
+  "Chestnut - Pholiota Adiposa",
+  "Pink Oyster - Pleurotus Djamor",
+  "Pink Oyster - Pleurotus Salmonestramineus",
+  "Blue Oyster - Pleurotus Columbinus",
+  "Golden Oyster - Pleurotus Citrinopileatus",
+  "Branched Oyster - Pleurotus Cornucopiae",
+  "Other"
+];
+
+function speciesSelect(id) {
+  const opts = SPECIES_LIST.map(s => `<option value="${s}">${s}</option>`).join('');
+  return `<select id="${id}"><option value="">Select species...</option>${opts}</select>`;
+}
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('shroomtrack_records') || '[]'); }
+  catch { return []; }
+}
+function saveRecord(rec) {
+  const all = getRecords();
+  all.unshift(rec);
+  localStorage.setItem('shroomtrack_records', JSON.stringify(all));
+}
+function getNextId(stage) {
+  const cfg = STAGE_CONFIG[stage];
+  const all = getRecords().filter(r => r.stage === stage);
+  const maxNum = all.reduce((m, r) => {
+    const n = parseInt((r.id || '').replace(cfg.prefix + '-', '')) || 0;
+    return Math.max(m, n);
+  }, 0);
+  return `${cfg.prefix}-${String(maxNum + 1).padStart(4, '0')}`;
+}
+
+// ── VIEWS ────────────────────────────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const map = { home: 0, form: 0, success: 0, qr: 1, records: 2, detail: 2 };
+  if (map[name] !== undefined) {
+    document.querySelectorAll('.nav-tab')[map[name]]?.classList.add('active');
+  }
+  if (name === 'home') updateCounts();
+  if (name === 'records') renderRecords('all');
+}
+
+function updateCounts() {
+  const all = getRecords();
+  Object.keys(STAGE_CONFIG).forEach(s => {
+    const cnt = all.filter(r => r.stage === s).length;
+    const el = document.getElementById('cnt-' + s);
+    if (el) el.textContent = cnt + (cnt === 1 ? ' record' : ' records');
+  });
+}
+
+// ── FORMS ────────────────────────────────────────────────────────────────────
+function openForm(stage, prefillId) {
+  currentStage = stage;
+  const id = prefillId || getNextId(stage);
+  const cfg = STAGE_CONFIG[stage];
+  const container = document.getElementById('form-container');
+  container.innerHTML = buildForm(stage, id, cfg);
+  showView('form');
+  initContamToggle(stage);
+}
+
+function buildForm(stage, id, cfg) {
+  const header = `
+    <div class="form-header">
+      <h2>${cfg.icon} ${cfg.label}</h2>
+      <div class="form-id-badge">${id}</div>
+      <p style="margin-top:4px;">Fill out and submit to save record</p>
+    </div>
+    <input type="hidden" id="f-id" value="${id}">
+    <input type="hidden" id="f-stage" value="${stage}">
+  `;
+
+  const forms = {
+    agar: `
+      ${header}
+      <div class="field-row">
+        <div class="field-group"><label>Batch ID</label><input type="text" id="f-batch" placeholder="BATCH-0001"></div>
+        <div class="field-group"><label>Technician</label><input type="text" id="f-tech" placeholder="Name"></div>
+      </div>
+      <div class="field-group"><label>Species</label>${speciesSelect('f-species')}</div>
+      <div class="field-group"><label>Agar Recipe</label><textarea id="f-recipe" placeholder="e.g. Water 500ml / LME 10g / Agar 10g / YE 0.5g"></textarea></div>
+      <div class="field-row">
+        <div class="field-group"><label>Pour Date</label><input type="date" id="f-pour-date"></div>
+        <div class="field-group"><label>Inoculation Date</label><input type="date" id="f-inoc-date"></div>
+      </div>
+      <div class="field-group"><label>Inoculation Source</label><input type="text" id="f-inoc-source" placeholder="e.g. North Spore, LC-0026"></div>
+      <div class="field-group"><label>Growth Notes</label><textarea id="f-notes" placeholder="Observations, mycelium coverage, anything notable..."></textarea></div>
+      <div class="section-divider">Contamination</div>
+      <div class="field-group">
+        <label>Contamination Observed?</label>
+        <div class="contamination-toggle">
+          <button class="toggle-btn" id="cont-no" onclick="setContam('no','${stage}')">✓ No</button>
+          <button class="toggle-btn" id="cont-yes" onclick="setContam('yes','${stage}')">✗ Yes</button>
+        </div>
+        <input type="hidden" id="f-contam" value="No">
+        <div class="contam-details" id="contam-details">
+          <div class="field-row">
+            <div class="field-group"><label>Contam Date</label><input type="date" id="f-contam-date"></div>
+            <div class="field-group"><label>Action</label><input type="text" id="f-action" placeholder="Throw away / Transfer"></div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    lc: `
+      ${header}
+      <div class="field-row">
+        <div class="field-group"><label>Batch ID</label><input type="text" id="f-batch" placeholder="BATCH-0001"></div>
+        <div class="field-group"><label>Technician</label><input type="text" id="f-tech" placeholder="Name"></div>
+      </div>
+      <div class="field-group"><label>Species</label>${speciesSelect('f-species')}</div>
+      <div class="field-group"><label>Media Recipe</label><textarea id="f-recipe" placeholder="e.g. Distilled Water 600ml - Honey 6ml"></textarea></div>
+      <div class="field-row">
+        <div class="field-group"><label>Volume (ml)</label><input type="number" id="f-volume" placeholder="600"></div>
+        <div class="field-group"><label>Inoculation Date</label><input type="date" id="f-inoc-date"></div>
+      </div>
+      <div class="field-group"><label>Inoculation Source</label><input type="text" id="f-inoc-source" placeholder="e.g. North Spore, AGAR-0026"></div>
+      <div class="field-group"><label>Growth Notes</label><textarea id="f-notes" placeholder="Mycelium growth, clarity, any observations..."></textarea></div>
+      <div class="section-divider">Contamination</div>
+      <div class="field-group">
+        <label>Contamination Observed?</label>
+        <div class="contamination-toggle">
+          <button class="toggle-btn" id="cont-no" onclick="setContam('no','${stage}')">✓ No</button>
+          <button class="toggle-btn" id="cont-yes" onclick="setContam('yes','${stage}')">✗ Yes</button>
+        </div>
+        <input type="hidden" id="f-contam" value="No">
+        <div class="contam-details" id="contam-details">
+          <div class="field-row">
+            <div class="field-group"><label>Contam Date</label><input type="date" id="f-contam-date"></div>
+            <div class="field-group"><label>Action Taken</label><input type="text" id="f-action" placeholder="Dispose / Restart"></div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    grain: `
+      ${header}
+      <div class="field-row">
+        <div class="field-group"><label>Batch ID</label><input type="text" id="f-batch" placeholder="BATCH-0001"></div>
+        <div class="field-group"><label>Technician</label><input type="text" id="f-tech" placeholder="Name"></div>
+      </div>
+      <div class="field-group"><label>Species</label>${speciesSelect('f-species')}</div>
+      <div class="field-row">
+        <div class="field-group"><label>Grain Type</label><input type="text" id="f-grain-type" placeholder="Sorghum / Red Milo / Rye"></div>
+        <div class="field-group"><label>Container</label>
+          <select id="f-container"><option value="">Select...</option><option>Jar</option><option>Bag</option><option>Bucket</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Hydration Method</label><input type="text" id="f-hydration" placeholder="Bucket soak / Pressure cook"></div>
+        <div class="field-group"><label>Sterilization Temp (°C)</label><input type="number" id="f-steril-temp" placeholder="121"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Sterilization Time (min)</label><input type="number" id="f-steril-time" placeholder="210"></div>
+        <div class="field-group"><label>Inoculation Date</label><input type="date" id="f-inoc-date"></div>
+      </div>
+      <div class="field-group"><label>Inoculation Source</label><input type="text" id="f-inoc-source" placeholder="e.g. LC-0026"></div>
+      <div class="field-row">
+        <div class="field-group"><label>Shake Date</label><input type="date" id="f-shake-date"></div>
+        <div class="field-group"><label>Colonization %</label><input type="number" id="f-colonization" placeholder="0-100" min="0" max="100"></div>
+      </div>
+      <div class="field-group"><label>Notes</label><textarea id="f-notes" placeholder="Growth observations, any issues..."></textarea></div>
+      <div class="section-divider">Contamination</div>
+      <div class="field-group">
+        <label>Contamination Observed?</label>
+        <div class="contamination-toggle">
+          <button class="toggle-btn" id="cont-no" onclick="setContam('no','${stage}')">✓ No</button>
+          <button class="toggle-btn" id="cont-yes" onclick="setContam('yes','${stage}')">✗ Yes</button>
+        </div>
+        <input type="hidden" id="f-contam" value="No">
+        <div class="contam-details" id="contam-details">
+          <div class="field-row">
+            <div class="field-group"><label>Contam Date</label><input type="date" id="f-contam-date"></div>
+            <div class="field-group"><label>Action</label><input type="text" id="f-action" placeholder="Dispose / Isolate"></div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    substrate: `
+      ${header}
+      <div class="field-row">
+        <div class="field-group"><label>Batch ID</label><input type="text" id="f-batch" placeholder="BATCH-0001"></div>
+        <div class="field-group"><label>Technician</label><input type="text" id="f-tech" placeholder="Name"></div>
+      </div>
+      <div class="field-group"><label>Species</label>${speciesSelect('f-species')}</div>
+      <div class="field-group"><label>Substrate Formula</label><textarea id="f-substrate-formula" placeholder="e.g. Hardwood sawdust 70% / Wheat bran 20% / Gypsum 10%"></textarea></div>
+      <div class="field-group"><label>Grain Spawn IDs Used</label><input type="text" id="f-grain-ids" placeholder="e.g. GRAIN-0030, GRAIN-0031"></div>
+      <div class="field-row">
+        <div class="field-group"><label>Spawn Rate %</label><input type="number" id="f-spawn-rate" placeholder="15" min="0" max="100"></div>
+        <div class="field-group"><label>Inoculation Date</label><input type="date" id="f-inoc-date"></div>
+      </div>
+      <div class="field-group"><label>Incubation Conditions</label><input type="text" id="f-incubation" placeholder="e.g. 75°F, dark, 85% RH"></div>
+      <div class="field-row">
+        <div class="field-group"><label>Fruiting Date</label><input type="date" id="f-fruiting-date"></div>
+        <div class="field-group"><label>Harvest Date</label><input type="date" id="f-harvest-date"></div>
+      </div>
+      <div class="field-group"><label>Fruiting Conditions</label><input type="text" id="f-fruiting-cond" placeholder="e.g. 68°F, 90% RH, FAE 2x daily"></div>
+      <div class="section-divider">Flush Weights</div>
+      <table class="flush-table">
+        <tr><th></th><th>Wet Weight (g)</th><th>Dry Weight (g)</th><th>Yield %</th></tr>
+        <tr>
+          <td class="flush-label">Flush 1</td>
+          <td><input type="number" id="f-wet1" placeholder="0"></td>
+          <td><input type="number" id="f-dry1" placeholder="0"></td>
+          <td><input type="number" id="f-yield1" placeholder="auto" readonly style="background:#f8f9fa;"></td>
+        </tr>
+        <tr>
+          <td class="flush-label">Flush 2</td>
+          <td><input type="number" id="f-wet2" placeholder="0"></td>
+          <td><input type="number" id="f-dry2" placeholder="0"></td>
+          <td><input type="number" id="f-yield2" placeholder="auto" readonly style="background:#f8f9fa;"></td>
+        </tr>
+        <tr>
+          <td class="flush-label">Flush 3</td>
+          <td><input type="number" id="f-wet3" placeholder="0"></td>
+          <td><input type="number" id="f-dry3" placeholder="0"></td>
+          <td><input type="number" id="f-yield3" placeholder="auto" readonly style="background:#f8f9fa;"></td>
+        </tr>
+      </table>
+      <div class="section-divider">Contamination</div>
+      <div class="field-group">
+        <label>Contamination Observed?</label>
+        <div class="contamination-toggle">
+          <button class="toggle-btn" id="cont-no" onclick="setContam('no','${stage}')">✓ No</button>
+          <button class="toggle-btn" id="cont-yes" onclick="setContam('yes','${stage}')">✗ Yes</button>
+        </div>
+        <input type="hidden" id="f-contam" value="No">
+        <div class="contam-details" id="contam-details">
+          <div class="field-row">
+            <div class="field-group"><label>Contam Date</label><input type="date" id="f-contam-date"></div>
+            <div class="field-group"><label>Action</label><input type="text" id="f-action" placeholder="Dispose / Isolate"></div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    drying: `
+      ${header}
+      <div class="field-row">
+        <div class="field-group"><label>Batch ID</label><input type="text" id="f-batch" placeholder="BATCH-0001"></div>
+        <div class="field-group"><label>Technician</label><input type="text" id="f-tech" placeholder="Name"></div>
+      </div>
+      <div class="field-group"><label>Species</label>${speciesSelect('f-species')}</div>
+      <div class="field-group"><label>Substrate IDs Used</label><input type="text" id="f-sub-ids" placeholder="e.g. SUB-0001, SUB-0002"></div>
+      <div class="field-row">
+        <div class="field-group"><label>Drying Method</label>
+          <select id="f-dry-method">
+            <option value="">Select...</option>
+            <option>Food Dehydrator</option>
+            <option>Air Dry</option>
+            <option>Freeze Dry</option>
+            <option>Oven Low Heat</option>
+          </select>
+        </div>
+        <div class="field-group"><label>Drying Temp (°C)</label><input type="number" id="f-dry-temp" placeholder="40"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Start Date</label><input type="date" id="f-start-date"></div>
+        <div class="field-group"><label>End Date</label><input type="date" id="f-end-date"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Pre-Dry Weight (g)</label><input type="number" id="f-pre-weight" placeholder="0"></div>
+        <div class="field-group"><label>Post-Dry Weight (g)</label><input type="number" id="f-post-weight" placeholder="0"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Storage Container</label><input type="text" id="f-storage-container" placeholder="Mason jar / Mylar bag"></div>
+        <div class="field-group"><label>Storage Location</label><input type="text" id="f-storage-location" placeholder="Shelf A, Bin 3"></div>
+      </div>
+      <div class="field-group"><label>Released for Extraction?</label>
+        <select id="f-released"><option value="No">No — hold in storage</option><option value="Yes">Yes — release for extraction</option></select>
+      </div>
+    `,
+
+    extraction: `
+      ${header}
+      <div class="field-row">
+        <div class="field-group"><label>Batch ID</label><input type="text" id="f-batch" placeholder="BATCH-0001"></div>
+        <div class="field-group"><label>Technician</label><input type="text" id="f-tech" placeholder="Name"></div>
+      </div>
+      <div class="field-group"><label>Species</label>${speciesSelect('f-species')}</div>
+      <div class="field-group"><label>Drying Lot IDs Used</label><input type="text" id="f-dry-ids" placeholder="e.g. DRY-0001, DRY-0002"></div>
+      <div class="field-group"><label>Dry Material Weight (g)</label><input type="number" id="f-dry-weight" placeholder="0"></div>
+      <div class="section-divider">Water Extraction</div>
+      <div class="field-row-3">
+        <div class="field-group"><label>Start Vol (ml)</label><input type="number" id="f-water-start" placeholder="0"></div>
+        <div class="field-group"><label>Temp (°C)</label><input type="number" id="f-water-temp" placeholder="100"></div>
+        <div class="field-group"><label>Time (hr)</label><input type="number" id="f-water-time" placeholder="2" step="0.5"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Final Vol (ml)</label><input type="number" id="f-water-final" placeholder="0"></div>
+        <div class="field-group"><label>Filtration Method</label><input type="text" id="f-water-filter" placeholder="Coffee filter / Cheesecloth"></div>
+      </div>
+      <div class="section-divider">Alcohol Extraction</div>
+      <div class="field-row-3">
+        <div class="field-group"><label>Start Vol (ml)</label><input type="number" id="f-alc-start" placeholder="0"></div>
+        <div class="field-group"><label>ABV %</label><input type="number" id="f-alc-abv" placeholder="95"></div>
+        <div class="field-group"><label>Time (hr)</label><input type="number" id="f-alc-time" placeholder="24" step="0.5"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Final Vol (ml)</label><input type="number" id="f-alc-final" placeholder="0"></div>
+        <div class="field-group"><label>Filtration Method</label><input type="text" id="f-alc-filter" placeholder="Coffee filter / Buchner"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>QC Pass / Fail</label>
+          <select id="f-qc"><option value="">Pending</option><option>Pass</option><option>Fail</option></select>
+        </div>
+        <div class="field-group"><label>QC Notes</label><input type="text" id="f-qc-notes" placeholder="Color, clarity, notes..."></div>
+      </div>
+    `
+  };
+
+  return (forms[stage] || '') + `
+    <button class="submit-btn" onclick="submitForm()">Save Record →</button>
+  `;
+}
+
+function initContamToggle(stage) {
+  if (stage === 'substrate') {
+    ['f-wet1','f-wet2','f-wet3'].forEach((id, i) => {
+      const wetEl = document.getElementById(id);
+      const dryEl = document.getElementById('f-dry' + (i+1));
+      const yieldEl = document.getElementById('f-yield' + (i+1));
+      if (wetEl && dryEl && yieldEl) {
+        const calc = () => {
+          const w = parseFloat(wetEl.value) || 0;
+          const d = parseFloat(dryEl.value) || 0;
+          yieldEl.value = w > 0 ? (d/w*100).toFixed(1) : '';
+        };
+        wetEl.addEventListener('input', calc);
+        dryEl.addEventListener('input', calc);
+      }
+    });
+  }
+}
+
+function setContam(val, stage) {
+  document.getElementById('f-contam').value = val === 'yes' ? 'Yes' : 'No';
+  document.getElementById('cont-yes').className = 'toggle-btn' + (val === 'yes' ? ' selected-yes' : '');
+  document.getElementById('cont-no').className  = 'toggle-btn' + (val === 'no'  ? ' selected-no'  : '');
+  const det = document.getElementById('contam-details');
+  if (det) det.classList.toggle('visible', val === 'yes');
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? (el.value || '').trim() : '';
+}
+
+function submitForm() {
+  const stage = getVal('f-stage');
+  const id = getVal('f-id');
+
+  const base = {
+    id, stage,
+    timestamp: new Date().toISOString(),
+    batchId: getVal('f-batch'),
+    species: getVal('f-species'),
+    technician: getVal('f-tech'),
+    contamination: getVal('f-contam'),
+  };
+
+  const extras = {
+    agar: { recipe: getVal('f-recipe'), pourDate: getVal('f-pour-date'), inocDate: getVal('f-inoc-date'), inocSource: getVal('f-inoc-source'), notes: getVal('f-notes'), contamDate: getVal('f-contam-date'), action: getVal('f-action') },
+    lc:   { recipe: getVal('f-recipe'), volume: getVal('f-volume'), inocDate: getVal('f-inoc-date'), inocSource: getVal('f-inoc-source'), notes: getVal('f-notes'), contamDate: getVal('f-contam-date'), action: getVal('f-action') },
+    grain: { grainType: getVal('f-grain-type'), container: getVal('f-container'), hydration: getVal('f-hydration'), sterilTemp: getVal('f-steril-temp'), sterilTime: getVal('f-steril-time'), inocDate: getVal('f-inoc-date'), inocSource: getVal('f-inoc-source'), shakeDate: getVal('f-shake-date'), colonization: getVal('f-colonization'), notes: getVal('f-notes'), contamDate: getVal('f-contam-date'), action: getVal('f-action') },
+    substrate: { substrateFormula: getVal('f-substrate-formula'), grainIds: getVal('f-grain-ids'), spawnRate: getVal('f-spawn-rate'), inocDate: getVal('f-inoc-date'), incubation: getVal('f-incubation'), fruitingDate: getVal('f-fruiting-date'), harvestDate: getVal('f-harvest-date'), fruitingCond: getVal('f-fruiting-cond'), wet1: getVal('f-wet1'), dry1: getVal('f-dry1'), yield1: getVal('f-yield1'), wet2: getVal('f-wet2'), dry2: getVal('f-dry2'), yield2: getVal('f-yield2'), wet3: getVal('f-wet3'), dry3: getVal('f-dry3'), yield3: getVal('f-yield3'), contamDate: getVal('f-contam-date'), action: getVal('f-action') },
+    drying: { subIds: getVal('f-sub-ids'), dryMethod: getVal('f-dry-method'), dryTemp: getVal('f-dry-temp'), startDate: getVal('f-start-date'), endDate: getVal('f-end-date'), preWeight: getVal('f-pre-weight'), postWeight: getVal('f-post-weight'), storageContainer: getVal('f-storage-container'), storageLocation: getVal('f-storage-location'), released: getVal('f-released') },
+    extraction: { dryIds: getVal('f-dry-ids'), dryWeight: getVal('f-dry-weight'), waterStart: getVal('f-water-start'), waterTemp: getVal('f-water-temp'), waterTime: getVal('f-water-time'), waterFinal: getVal('f-water-final'), waterFilter: getVal('f-water-filter'), alcStart: getVal('f-alc-start'), alcAbv: getVal('f-alc-abv'), alcTime: getVal('f-alc-time'), alcFinal: getVal('f-alc-final'), alcFilter: getVal('f-alc-filter'), qc: getVal('f-qc'), qcNotes: getVal('f-qc-notes') },
+  };
+
+  const record = { ...base, ...(extras[stage] || {}) };
+  saveRecord(record);
+  document.getElementById('success-id-display').textContent = id;
+  showView('success');
+}
+
+// ── QR CODE GENERATION ───────────────────────────────────────────────────────
+let qrInstance = null;
+
+function selectQrStage(btn) {
+  document.querySelectorAll('.qr-stage-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentQrStage = btn.dataset.stage;
+  const cfg = STAGE_CONFIG[currentQrStage];
+  document.getElementById('bulk-stage-display').textContent = cfg.label;
+  const nextId = getNextId(currentQrStage);
+  document.getElementById('qr-id-input').value = nextId;
+  generateQR();
+}
+
+function generateQR() {
+  const id = document.getElementById('qr-id-input').value.trim() || getNextId(currentQrStage);
+  const url = `${APP_URL}?stage=${currentQrStage}&id=${encodeURIComponent(id)}`;
+
+  const wrap = document.getElementById('qr-canvas-wrap');
+  wrap.innerHTML = '';
+
+  if (qrInstance) { try { qrInstance.clear(); } catch(e){} }
+
+  qrInstance = new QRCode(wrap, {
+    text: url,
+    width: 180,
+    height: 180,
+    colorDark: '#1b4332',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  document.getElementById('qr-label-text').textContent = id;
+  document.getElementById('qr-url-text').textContent = url;
+}
+
+function downloadQR() {
+  const canvas = document.querySelector('#qr-canvas-wrap canvas');
+  if (!canvas) return;
+  const id = document.getElementById('qr-id-input').value.trim();
+  const link = document.createElement('a');
+  link.download = `${id}-qr.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function printBulk() {
+  const stage = currentQrStage;
+  const cfg = STAGE_CONFIG[stage];
+  const start = parseInt(document.getElementById('bulk-start').value) || 1;
+  const end = parseInt(document.getElementById('bulk-end').value) || 10;
+
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<!DOCTYPE html><html><head><title>QR Labels — ${cfg.label}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px; }
+    .label { border: 1px dashed #ccc; border-radius: 6px; padding: 10px; text-align: center; page-break-inside: avoid; }
+    .label-id { font-size: 10px; font-weight: bold; color: #1b4332; margin-top: 6px; font-family: monospace; }
+    .label-stage { font-size: 9px; color: #666; }
+    @media print { @page { size: letter; margin: 0.5in; } }
+  </style></head><body>
+  <div class="grid" id="grid"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <script>
+    const grid = document.getElementById('grid');
+    const base = '${APP_URL}';
+    for (let i = ${start}; i <= ${end}; i++) {
+      const id = '${cfg.prefix}-' + String(i).padStart(4,'0');
+      const url = base + '?stage=${stage}&id=' + id;
+      const div = document.createElement('div');
+      div.className = 'label';
+      const qrDiv = document.createElement('div');
+      div.appendChild(qrDiv);
+      div.innerHTML += '<div class="label-id">' + id + '</div><div class="label-stage">${cfg.label}</div>';
+      grid.appendChild(div);
+      new QRCode(qrDiv, { text: url, width: 100, height: 100, colorDark: '#1b4332', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
+    }
+    setTimeout(() => window.print(), 1200);
+  <\/script></body></html>`);
+  printWin.document.close();
+}
+
+// ── RECORDS ──────────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+
+function filterRecords(btn) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  renderRecords(currentFilter);
+}
+
+function renderRecords(filter) {
+  const all = getRecords();
+  const filtered = filter === 'all' ? all : all.filter(r => r.stage === filter);
+  const list = document.getElementById('records-list');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state">No records yet for this stage.<br>Start logging to see entries here.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => {
+    const cfg = STAGE_CONFIG[r.stage] || {};
+    const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString() : '—';
+    const contamFlag = r.contamination === 'Yes' ? '<span class="contam-flag">⚠ Contam</span>' : '';
+    return `
+      <div class="record-card" onclick="showDetail('${r.id}','${r.timestamp}')">
+        <div class="record-card-header">
+          <span class="record-id">${r.id}${contamFlag}</span>
+          <span class="record-stage-badge ${cfg.badgeClass || ''}">${cfg.icon || ''} ${cfg.label || r.stage}</span>
+        </div>
+        <div class="record-species">${r.species || '—'}</div>
+        <div class="record-date">${date} · Batch: ${r.batchId || '—'} · Tech: ${r.technician || '—'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showDetail(id, timestamp) {
+  const rec = getRecords().find(r => r.id === id && r.timestamp === timestamp);
+  if (!rec) return;
+  const cfg = STAGE_CONFIG[rec.stage] || {};
+  const skip = ['id','stage','timestamp'];
+  const fields = Object.entries(rec).filter(([k]) => !skip.includes(k));
+
+  const labels = {
+    batchId:'Batch ID', species:'Species', technician:'Technician',
+    contamination:'Contamination', recipe:'Recipe', pourDate:'Pour Date',
+    inocDate:'Inoculation Date', inocSource:'Inoculation Source', notes:'Notes',
+    contamDate:'Contam Date', action:'Action Taken', volume:'Volume (ml)',
+    grainType:'Grain Type', container:'Container', hydration:'Hydration Method',
+    sterilTemp:'Sterilization Temp (°C)', sterilTime:'Sterilization Time (min)',
+    shakeDate:'Shake Date', colonization:'Colonization %',
+    substrateFormula:'Substrate Formula', grainIds:'Grain Spawn IDs',
+    spawnRate:'Spawn Rate %', incubation:'Incubation Conditions',
+    fruitingDate:'Fruiting Date', harvestDate:'Harvest Date',
+    fruitingCond:'Fruiting Conditions',
+    wet1:'Flush 1 — Wet (g)', dry1:'Flush 1 — Dry (g)', yield1:'Flush 1 — Yield %',
+    wet2:'Flush 2 — Wet (g)', dry2:'Flush 2 — Dry (g)', yield2:'Flush 2 — Yield %',
+    wet3:'Flush 3 — Wet (g)', dry3:'Flush 3 — Dry (g)', yield3:'Flush 3 — Yield %',
+    subIds:'Substrate IDs', dryMethod:'Drying Method', dryTemp:'Drying Temp (°C)',
+    startDate:'Start Date', endDate:'End Date', preWeight:'Pre-Dry Weight (g)',
+    postWeight:'Post-Dry Weight (g)', storageContainer:'Storage Container',
+    storageLocation:'Storage Location', released:'Released for Extraction',
+    dryIds:'Drying Lot IDs', dryWeight:'Dry Material Weight (g)',
+    waterStart:'Water — Start Vol (ml)', waterTemp:'Water Temp (°C)',
+    waterTime:'Water Time (hr)', waterFinal:'Water Final Vol (ml)',
+    waterFilter:'Water Filtration', alcStart:'Alcohol — Start Vol (ml)',
+    alcAbv:'Alcohol ABV %', alcTime:'Alcohol Time (hr)',
+    alcFinal:'Alcohol Final Vol (ml)', alcFilter:'Alcohol Filtration',
+    qc:'QC Status', qcNotes:'QC Notes',
+  };
+
+  const rows = fields.filter(([,v]) => v).map(([k,v]) =>
+    `<div class="detail-field">
+      <span class="detail-label">${labels[k] || k}</span>
+      <span class="detail-value">${v}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('detail-container').innerHTML = `
+    <div class="form-header">
+      <h2>${cfg.icon || ''} ${cfg.label || rec.stage}</h2>
+      <div class="form-id-badge">${rec.id}</div>
+      <p style="margin-top:4px;opacity:0.75;">Logged ${new Date(rec.timestamp).toLocaleString()}</p>
+    </div>
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;margin-top:0.5rem;">
+      ${rows || '<p style="color:var(--text-muted);font-size:0.85rem;">No fields recorded.</p>'}
+    </div>
+  `;
+  showView('detail');
+}
+
+function exportCSV() {
+  const all = getRecords();
+  if (!all.length) { alert('No records to export.'); return; }
+  const keys = [...new Set(all.flatMap(r => Object.keys(r)))];
+  const rows = [keys.join(','), ...all.map(r => keys.map(k => JSON.stringify(r[k] || '')).join(','))];
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `shroomtrack-export-${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+// ── URL ROUTING (scan QR → open correct form) ────────────────────────────────
+function routeFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const stage = params.get('stage');
+  const id = params.get('id');
+  if (stage && STAGE_CONFIG[stage]) {
+    openForm(stage, id || undefined);
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  updateCounts();
+  routeFromURL();
+  setTimeout(() => generateQR(), 100);
+});
+</script>
+</body>
+</html>
