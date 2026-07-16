@@ -1,0 +1,204 @@
+/* ============================================================
+   cards.css — Stage cards, record cards, badges, detail view
+   ============================================================ */
+
+/* ── Home screen header ── */
+.home-header {
+  text-align: center;
+  padding: 1.5rem 0 1rem;
+}
+.home-header h1 {
+  font-size: 1.4rem;
+  color: var(--green-dark);
+  margin-bottom: 0.25rem;
+}
+.home-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ── Stage selector grid ── */
+.stage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.stage-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow);
+}
+.stage-card:hover,
+.stage-card:active {
+  border-color: var(--green-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(45,106,79,0.15);
+}
+
+.stage-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.stage-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--green-dark);
+  display: block;
+}
+.stage-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.stage-count {
+  display: inline-block;
+  background: var(--green-pale);
+  color: var(--green-dark);
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 20px;
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+/* ── Records list ── */
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.records-header h2 {
+  font-size: 1rem;
+  color: var(--green-dark);
+}
+
+.stage-filter {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.filter-chip {
+  white-space: nowrap;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.72rem;
+  background: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+.filter-chip.active {
+  background: var(--green-dark);
+  color: white;
+  border-color: var(--green-dark);
+}
+
+.record-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.65rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.record-card:hover {
+  box-shadow: var(--shadow);
+}
+.record-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.record-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--green-dark);
+}
+.record-stage-badge {
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+.record-species {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.record-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.contam-flag {
+  display: inline-block;
+  background: var(--red-light);
+  color: var(--red);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  font-weight: bold;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ── Export button ── */
+.export-btn {
+  background: var(--green-pale);
+  color: var(--green-dark);
+  border: 1px solid var(--green-light);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ── Record detail view ── */
+.detail-field {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 0.85rem;
+}
+.detail-field:last-child {
+  border-bottom: none;
+}
+.detail-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+.detail-value {
+  font-weight: bold;
+  text-align: right;
+  max-width: 60%;
+}
+
+/* ── Stage badge color themes ── */
+.badge-agar       { background: #e8f5e9; color: #2e7d32; }
+.badge-lc         { background: #e3f2fd; color: #1565c0; }
+.badge-grain      { background: #fff8e1; color: #f57f17; }
+.badge-substrate  { background: #fce4ec; color: #880e4f; }
+.badge-drying     { background: #f3e5f5; color: #6a1b9a; }
+.badge-extraction { background: #e0f2f1; color: #004d40; }

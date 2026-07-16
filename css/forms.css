@@ -1,0 +1,231 @@
+/* ============================================================
+   forms.css — Form fields, labels, toggles, submit buttons
+   ============================================================ */
+
+/* ── Form header banner ── */
+.form-header {
+  background: var(--green-dark);
+  color: white;
+  padding: 1rem;
+  border-radius: 12px 12px 0 0;
+  margin: -1rem -1rem 1rem;
+}
+.form-header h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.15rem;
+}
+.form-header p {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+.form-id-badge {
+  display: inline-block;
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Field groups ── */
+.field-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: bold;
+  color: var(--bark);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Inputs ── */
+input[type=text],
+input[type=date],
+input[type=number],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: white;
+  color: var(--text);
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--green-light);
+  box-shadow: 0 0 0 3px rgba(82,183,136,0.15);
+}
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+input[readonly] {
+  background: var(--fog);
+  color: var(--text-muted);
+}
+
+/* ── Grid layouts for side-by-side fields ── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.field-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+/* ── Contamination yes/no toggle ── */
+.contamination-toggle {
+  display: flex;
+  gap: 10px;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.toggle-btn.selected-no {
+  background: var(--green-pale);
+  border-color: var(--green-light);
+  color: var(--green-dark);
+  font-weight: bold;
+}
+.toggle-btn.selected-yes {
+  background: var(--red-light);
+  border-color: var(--red);
+  color: var(--red);
+  font-weight: bold;
+}
+
+/* ── Contamination detail panel (hidden until Yes selected) ── */
+.contam-details {
+  background: var(--red-light);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  display: none;
+}
+.contam-details.visible {
+  display: block;
+}
+
+/* ── Flush weights table (Substrate form) ── */
+.flush-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.flush-table th {
+  text-align: center;
+  padding: 6px 4px;
+  background: var(--green-pale);
+  color: var(--green-dark);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.flush-table td {
+  padding: 4px;
+}
+.flush-table input {
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+.flush-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 6px 4px;
+  text-align: center;
+}
+
+/* ── Split ID field (fixed prefix + number-only input) ── */
+.id-split-field {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.id-split-field:focus-within {
+  border-color: var(--green-light);
+  box-shadow: 0 0 0 3px rgba(82,183,136,0.15);
+}
+.id-prefix {
+  padding: 10px 8px 10px 12px;
+  font-size: 0.95rem;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: var(--green-dark);
+  background: var(--green-pale);
+  border-right: 1.5px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+.id-split-field input[type=number] {
+  flex: 1;
+  width: auto;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 10px 12px;
+  min-width: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+}
+.id-split-field input[type=number]:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+.id-split-field input[type=number]::-webkit-outer-spin-button,
+.id-split-field input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.id-split-field input[type=number] { -moz-appearance: textfield; }
+
+/* ── Submit button ── */
+.submit-btn {
+  width: 100%;
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  letter-spacing: 0.02em;
+  transition: background 0.15s;
+}
+.submit-btn:hover  { background: var(--green-dark); }
+.submit-btn:active { transform: scale(0.99); }

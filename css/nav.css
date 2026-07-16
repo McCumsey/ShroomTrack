@@ -1,0 +1,68 @@
+/* ============================================================
+   nav.css — Navigation bar and tab styles
+   ============================================================ */
+
+.nav {
+  background: var(--green-dark);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-logo {
+  color: var(--green-pale);
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+}
+.nav-logo span {
+  color: var(--green-light);
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-tab {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.7);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.nav-tab.active,
+.nav-tab:hover {
+  background: var(--green-light);
+  color: var(--green-dark);
+  border-color: var(--green-light);
+  font-weight: bold;
+}
+
+/* ── Back button (used inside form/detail views) ── */
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.back-btn:hover {
+  border-color: var(--green-light);
+  color: var(--green-dark);
+}
